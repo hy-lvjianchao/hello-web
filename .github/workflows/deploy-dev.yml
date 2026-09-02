@@ -1,0 +1,111 @@
+name: Deploy Member Web to ECS
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-1
+
+  ECR_REPOSITORY: mix-dev-lions-member-web
+
+  ECS_CLUSTER: mix-dev-lions-fargate-cluster
+  ECS_SERVICE: mix-dev-lions-member-web-service
+  ECS_TASK_DEFINITION_FAMILY: mix-dev-lions-member-web-task
+
+  CONTAINER_NAME: member-web-container
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ========================================
+      # Checkout
+      # ========================================
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ========================================
+      # Python syntax check
+      # ========================================
+      - name: Check Python syntax
+        run: |
+          python -m py_compile app.py
+
+      # ========================================
+      # AWS OIDC Login
+      # ========================================
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::665511042038:role/mix-dev-github-actions-deploy-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ========================================
+      # Login ECR
+      # ========================================
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ========================================
+      # Docker Build & Push
+      # ========================================
+      - name: Build and push image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+          echo "Building: $IMAGE_URI"
+
+          docker build \
+            -t $IMAGE_URI \
+            .
+
+          docker push $IMAGE_URI
+
+          echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+      # ========================================
+      # Download current Task Definition
+      # ========================================
+      - name: Download ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ECS_TASK_DEFINITION_FAMILY \
+            --query taskDefinition \
+            > task-definition.json
+
+      # ========================================
+      # Replace container image
+      # ========================================
+      - name: Render ECS task definition
+        id: render-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      # ========================================
+      # Register Task Definition
+      # Update ECS Service
+      # ========================================
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
