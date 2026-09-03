@@ -12,7 +12,7 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
 
-  ECR_REPOSITORY: mix-dev-lions-member-web
+  ECR_REPOSITORY: mix-dev-ecr
 
   ECS_CLUSTER: mix-dev-lions-fargate-cluster
   ECS_SERVICE: mix-dev-lions-member-web-service
