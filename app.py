@@ -151,8 +151,15 @@ class Handler(BaseHTTPRequestHandler):
                 "path": self.path
             }
         )
-server = HTTPServer(("0.0.0.0", PORT), Handler)
-print(f"Starting ECS test server on port {PORT}")
-print(f"S3 Files path: {S3_FILES_PATH}")
 
-server.serve_forever()
+def main():
+    server = HTTPServer(("0.0.0.0", PORT), Handler)
+
+    print(f"Starting ECS test server on port {PORT}")
+    print(f"S3 Files path: {S3_FILES_PATH}")
+
+    server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()
