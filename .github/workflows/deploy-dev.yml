@@ -1,10 +1,9 @@
 name: Deploy Member Web to ECS
 
 on:
-  workflow_dispatch:
-  #push:
-  #  branches:
-  #    - dev
+  push:
+    branches:
+      - dev
 
 permissions:
   id-token: write
