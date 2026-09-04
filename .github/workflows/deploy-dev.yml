@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - "app.py"
+      - "Dockerfile"
 
 permissions:
   id-token: write
