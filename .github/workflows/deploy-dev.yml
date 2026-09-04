@@ -1,4 +1,4 @@
-name: Deploy Member Web to ECS
+name: Deploy Member Web to ECS1
 
 on:
   push:
