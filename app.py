@@ -7,6 +7,14 @@ PORT = int(os.getenv("PORT", "80"))
 S3_FILES_PATH = os.getenv("S3_FILES_PATH", "/mnt/s3files")
 
 class Handler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        print(
+            f"{datetime.now().isoformat()} "
+            f"{self.client_address[0]} "
+            f"{self.requestline} "
+            f"{format % args}",
+            flush=True
+        )
     def send_json(self, status_code, data):
         body = json.dumps(data).encode("utf-8")
         self.send_response(status_code)
