@@ -107,7 +107,7 @@ class Handler(BaseHTTPRequestHandler):
                 "ecs-test.txt"
             )
             test_content = (
-                "Hello from ECS Fargate!\n"
+                "Hello from ECS Fargate1!\n"
                 f"Time: {datetime.now().isoformat()}\n"
             )
             try:
