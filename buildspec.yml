@@ -56,7 +56,7 @@ phases:
   build:
     commands:
       - echo "=== Docker build ==="
-      - source build.env
+      - . build.env
 
       - |
         docker build \
@@ -70,7 +70,7 @@ phases:
   post_build:
     commands:
       - echo "=== Push image to ECR ==="
-      - source build.env
+      - . build.env
 
       - |
         docker push "$REPOSITORY_URI:$IMAGE_TAG"
