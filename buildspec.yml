@@ -4,8 +4,6 @@ env:
   variables:
     AWS_REGION: ap-northeast-1
     AWS_ACCOUNT_ID: "665511042038"
-    ECR_REPOSITORY: mix-dev-ecr
-    CONTAINER_NAME: member-web-container
 
 phases:
 
@@ -22,6 +20,7 @@ phases:
 
   pre_build:
     commands:
+
       - echo "=== Run unit tests ==="
       - pytest -v
 
@@ -36,54 +35,37 @@ phases:
           --password-stdin \
           "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-      - |
-        REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY"
-        echo "REPOSITORY_URI=$REPOSITORY_URI"
+  build:
+    commands:
+
+      - echo "=== Docker build ==="
 
       - |
+        REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY"
+
         IMAGE_TAG=$(echo "$CODEBUILD_RESOLVED_SOURCE_VERSION" | cut -c 1-40)
 
         if [ -z "$IMAGE_TAG" ]; then
           IMAGE_TAG="$CODEBUILD_BUILD_NUMBER"
         fi
 
+        echo "REPOSITORY_URI=$REPOSITORY_URI"
         echo "IMAGE_TAG=$IMAGE_TAG"
 
-      - |
-        echo "REPOSITORY_URI=$REPOSITORY_URI" > build.env
-        echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
-
-  build:
-    commands:
-      - echo "=== Docker build ==="
-      - . build.env
-
-      - |
         docker build \
           -t "$REPOSITORY_URI:$IMAGE_TAG" \
           .
 
-      - |
-        echo "Built image:"
-        echo "$REPOSITORY_URI:$IMAGE_TAG"
+        docker push \
+          "$REPOSITORY_URI:$IMAGE_TAG"
 
-  post_build:
-    commands:
-      - echo "=== Push image to ECR ==="
-      - . build.env
-
-      - |
-        docker push "$REPOSITORY_URI:$IMAGE_TAG"
-
-      - echo "=== Create imagedefinitions.json ==="
-
-      - |
         printf '[{"name":"%s","imageUri":"%s"}]' \
           "$CONTAINER_NAME" \
           "$REPOSITORY_URI:$IMAGE_TAG" \
           > imagedefinitions.json
 
-      - cat imagedefinitions.json
+        echo "=== imagedefinitions.json ==="
+        cat imagedefinitions.json
 
 artifacts:
   files:
