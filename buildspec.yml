@@ -4,6 +4,7 @@ env:
   variables:
     AWS_REGION: ap-northeast-1
     AWS_ACCOUNT_ID: "665511042038"
+    TARGET: "member-ap-container"
 
 phases:
 
@@ -12,6 +13,14 @@ phases:
       python: 3.12
 
     commands:
+      - |
+        echo "TARGET=$TARGET"
+        echo "DEPLOY_TARGET=$DEPLOY_TARGET"
+
+        if [ "$TARGET" != "$DEPLOY_TARGET" ]; then
+          echo "Target does not match. Skip this build."
+          exit 0
+        fi
       - echo "=== Install dependencies ==="
       - python --version
       - pip --version
