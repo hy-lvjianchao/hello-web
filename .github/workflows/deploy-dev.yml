@@ -19,10 +19,9 @@ env:
   ECR_REPOSITORY: mix-dev-ecr
 
   ECS_CLUSTER: mix-dev-lions-fargate-cluster
-  ECS_SERVICE: mix-dev-lions-member-web-service
-  ECS_TASK_DEFINITION_FAMILY: mix-dev-lions-member-web-task
-
-  CONTAINER_NAME: member-web-container
+  ECS_SERVICE: mix-dev-lions-member-ap-service
+  ECS_TASK_DEFINITION_FAMILY: mix-dev-lions-member-ap-task
+  CONTAINER_NAME: member-ap-container
 
 jobs:
 
