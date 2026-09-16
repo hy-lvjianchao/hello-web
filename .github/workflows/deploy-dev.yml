@@ -1,4 +1,4 @@
-name: Deploy Member Web to ECS
+name: Deploy Member to ECS
 
 on:
   push:
@@ -16,12 +16,12 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
 
-  ECR_REPOSITORY: mix-dev-ecr
+  ECR_REPOSITORY: mix-dev-ssl-member-ecr
 
-  ECS_CLUSTER: mix-dev-lions-fargate-cluster
-  ECS_SERVICE: mix-dev-lions-member-web-service
-  ECS_TASK_DEFINITION_FAMILY: mix-dev-lions-member-web-task
-  CONTAINER_NAME: member-web-container
+  ECS_CLUSTER: mix-dev-ssl-fargate-cluster
+  ECS_SERVICE: mix-dev-ssl-member-service
+  ECS_TASK_DEFINITION_FAMILY: mix-dev-ssl-member-task
+  CONTAINER_NAME: member-container
 
 jobs:
 
