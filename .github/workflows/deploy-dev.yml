@@ -16,7 +16,7 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
 
-  ECR_REPOSITORY: mix-dev-ssl-member-ecr
+  ECR_REPOSITORY: mix-dev-ssl-app-ecr
 
   ECS_CLUSTER: mix-dev-ssl-fargate-cluster
   ECS_SERVICE: mix-dev-ssl-member-service
