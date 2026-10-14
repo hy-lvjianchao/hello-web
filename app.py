@@ -27,6 +27,17 @@ class Handler(BaseHTTPRequestHandler):
         # 1. Web ALB HealthCheck
         # GET /health
         # ========================================
+        if self.path == "/mix/actuator/health/readiness":
+            self.send_json(
+                200,
+                {
+                    "status": "UP",
+                    "service": "web",
+                    "check": "readiness",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            return
         if self.path == "/ssl/actuator/health/readiness":
             self.send_json(
                 200,
