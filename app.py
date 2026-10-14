@@ -166,7 +166,7 @@ class Handler(BaseHTTPRequestHandler):
         # 5. Secrets Manager read test
         # GET /secrets-test
         # ========================================
-        if self.path == "/secrets-test":
+        if self.path == "/ssl/secrets-test":
             secret_id = "mix/dev/ssl/crypter-keys"
             region = os.getenv("AWS_REGION", "ap-northeast-1")
 
