@@ -2,6 +2,8 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from datetime import datetime
+import boto3
+from botocore.exceptions import ClientError, BotoCoreError
 
 PORT = int(os.getenv("PORT", "8080"))
 S3_FILES_PATH = os.getenv("S3_FILES_PATH", "/mnt/s3files")
@@ -155,6 +157,76 @@ class Handler(BaseHTTPRequestHandler):
                         "status": "DOWN",
                         "message": str(e),
                         "file": test_file
+                    }
+                )
+
+            return
+        
+        # ========================================
+        # 5. Secrets Manager read test
+        # GET /secrets-test
+        # ========================================
+        if self.path == "/secrets-test":
+            secret_id = "mix/dev/ssl/crypter-keys"
+            region = os.getenv("AWS_REGION", "ap-northeast-1")
+
+            try:
+                client = boto3.client(
+                    "secretsmanager",
+                    region_name=region
+                )
+
+                response = client.get_secret_value(
+                    SecretId=secret_id
+                )
+
+                self.send_json(
+                    200,
+                    {
+                        "status": "UP",
+                        "message": "Secrets Manager read succeeded",
+                        "secret_id": secret_id,
+                        "region": region,
+                        "version_id": response.get("VersionId"),
+                        "has_secret_string": "SecretString" in response,
+                        "has_secret_binary": "SecretBinary" in response
+                    }
+                )
+
+            except ClientError as e:
+                error = e.response.get("Error", {})
+
+                self.send_json(
+                    500,
+                    {
+                        "status": "DOWN",
+                        "message": "Secrets Manager read failed",
+                        "secret_id": secret_id,
+                        "region": region,
+                        "error_code": error.get("Code"),
+                        "error_message": error.get("Message")
+                    }
+                )
+
+            except BotoCoreError as e:
+                self.send_json(
+                    500,
+                    {
+                        "status": "DOWN",
+                        "message": "AWS SDK or network error",
+                        "error_type": type(e).__name__,
+                        "error_message": str(e)
+                    }
+                )
+
+            except Exception as e:
+                self.send_json(
+                    500,
+                    {
+                        "status": "DOWN",
+                        "message": "Unexpected error",
+                        "error_type": type(e).__name__,
+                        "error_message": str(e)
                     }
                 )
 
