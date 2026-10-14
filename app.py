@@ -3,7 +3,7 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from datetime import datetime
 
-PORT = int(os.getenv("PORT", "80"))
+PORT = int(os.getenv("PORT", "8080"))
 S3_FILES_PATH = os.getenv("S3_FILES_PATH", "/mnt/s3files")
 
 class Handler(BaseHTTPRequestHandler):
@@ -27,6 +27,17 @@ class Handler(BaseHTTPRequestHandler):
         # 1. Web ALB HealthCheck
         # GET /health
         # ========================================
+        if self.path == "/ssl/actuator/health/readiness":
+            self.send_json(
+                200,
+                {
+                    "status": "UP",
+                    "service": "web",
+                    "check": "readiness",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            return
         if self.path == "/health":
             self.send_json(
                 200,
